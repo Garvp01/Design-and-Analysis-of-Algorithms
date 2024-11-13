@@ -1,56 +1,74 @@
 import java.util.Scanner;
 
-public class KnapsackDP {
+public class FloydWarshall {
 
-    // Function to implement the knapsack problem using dynamic programming
-    public static int knapsack(int[] values, int[] weights, int capacity, int n) {
-        // Create a DP table where dp[i][w] represents the maximum value for i items and weight w
-        int[][] dp = new int[n + 1][capacity + 1];
+    final static int INF = 99999;  // Representing infinity as a large number
 
-        // Build the DP table
-        for (int i = 1; i <= n; i++) {
-            for (int w = 1; w <= capacity; w++) {
-                if (weights[i - 1] <= w) {
-                    // Include the item or exclude it, choose the option that gives maximum value
-                    dp[i][w] = Math.max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + values[i - 1]);
-                } else {
-                    // If the current item can't be included, take the value without it
-                    dp[i][w] = dp[i - 1][w];
+    // Function to implement Floyd-Warshall Algorithm
+    public static void floydWarshall(int[][] graph, int V) {
+        // Create a distance matrix initialized with the graph adjacency matrix
+        int[][] dist = new int[V][V];
+
+        // Initialize the solution matrix same as input graph matrix
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                dist[i][j] = graph[i][j];
+            }
+        }
+
+        // Update the solution matrix by considering all vertices as intermediate vertices
+        for (int k = 0; k < V; k++) {
+            // Pick all vertices as source one by one
+            for (int i = 0; i < V; i++) {
+                // Pick all vertices as destination for the above-picked source
+                for (int j = 0; j < V; j++) {
+                    // If vertex k is on the shortest path from i to j, update the dist[i][j]
+                    if (dist[i][k] + dist[k][j] < dist[i][j]) {
+                        dist[i][j] = dist[i][k] + dist[k][j];
+                    }
                 }
             }
         }
 
-        // The last cell of the DP table will have the maximum value for the full knapsack
-        return dp[n][capacity];
+        // Print the shortest distance matrix
+        printSolution(dist, V);
+    }
+
+    // Function to print the solution matrix
+    public static void printSolution(int[][] dist, int V) {
+        System.out.println("Shortest distances between every pair of vertices:");
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                if (dist[i][j] == INF) {
+                    System.out.print("INF ");
+                } else {
+                    System.out.print(dist[i][j] + "   ");
+                }
+            }
+            System.out.println();
+        }
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Input number of items
-        System.out.print("Enter the number of items: ");
-        int n = scanner.nextInt();
+        // Input the number of vertices
+        System.out.print("Enter the number of vertices: ");
+        int V = scanner.nextInt();
 
-        int[] values = new int[n];
-        int[] weights = new int[n];
-
-        // Input values and weights of each item
-        System.out.println("Enter the values and weights of the items:");
-        for (int i = 0; i < n; i++) {
-            System.out.print("Item " + (i + 1) + " value: ");
-            values[i] = scanner.nextInt();
-            System.out.print("Item " + (i + 1) + " weight: ");
-            weights[i] = scanner.nextInt();
+        // Input the adjacency matrix of the graph
+        int[][] graph = new int[V][V];
+        System.out.println("Enter the adjacency matrix (use 99999 for no direct path):");
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                graph[i][j] = scanner.nextInt();
+            }
         }
 
-        // Input the knapsack capacity
-        System.out.print("Enter the knapsack capacity: ");
-        int capacity = scanner.nextInt();
-
-        // Solve the knapsack problem
-        int maxValue = knapsack(values, weights, capacity, n);
-        System.out.println("Maximum value that can be obtained: " + maxValue);
+        // Call the Floyd-Warshall algorithm to find the shortest paths
+        floydWarshall(graph, V);
 
         scanner.close();
     }
 }
+
